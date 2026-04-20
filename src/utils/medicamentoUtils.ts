@@ -13,9 +13,9 @@ export function calcularDiasRestantes(dataInicio: string, duracao: number) {
 }
 
 export function getStatus(estoque: number, alerta: number) {
-	if (estoque <= 0) return "acabou";
-	if (estoque <= alerta) return "acabando";
-	return "ok";
+	if (estoque <= 0) return "Acabou";
+	if (estoque <= alerta) return "Acabando";
+	return "OK";
 }
 
 export function precisaNotificar(estoque: number, alerta: number) {

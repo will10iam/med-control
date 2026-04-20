@@ -71,3 +71,14 @@ export async function adicionarCaixa(
 ) {
 	await atualizarEstoque(id, estoqueAtual + quantidadePorCaixa);
 }
+
+export async function salvarToken(token: string) {
+	try {
+		await addDoc(collection(db, "tokens"), {
+			token,
+			createdAt: new Date().toISOString(),
+		});
+	} catch (error) {
+		console.error("Erro ao salvar token:", error);
+	}
+}

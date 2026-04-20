@@ -2,7 +2,7 @@ export type Medicamento = {
 	id?: string;
 
 	nome: string;
-	tipo: "contínuo" | "eventual";
+	tipo: "continuo" | "eventual";
 
 	quantidadePorCaixa: number;
 
@@ -11,6 +11,8 @@ export type Medicamento = {
 
 	estoqueAtual: number;
 	alertaMinimo: number;
+
+	horarios?: string[];
 
 	createdAt: string;
 };
