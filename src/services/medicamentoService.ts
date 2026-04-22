@@ -5,6 +5,8 @@ import {
 	doc,
 	updateDoc,
 	getDocs,
+	getDoc,
+	deleteDoc,
 	onSnapshot,
 } from "firebase/firestore";
 import { Medicamento } from "@/types/Medicamento";
@@ -80,5 +82,43 @@ export async function salvarToken(token: string) {
 		});
 	} catch (error) {
 		console.error("Erro ao salvar token:", error);
+	}
+}
+
+export async function deletarMedicamento(id: string) {
+	await deleteDoc(doc(db, "medicamentos", id));
+}
+
+export async function getMedicamentoById(
+	id: string,
+): Promise<Medicamento | null> {
+	try {
+		const ref = doc(db, "medicamentos", id);
+		const snapshot = await getDoc(ref);
+
+		if (!snapshot.exists()) return null;
+
+		return {
+			id: snapshot.id,
+			...(snapshot.data() as Omit<Medicamento, "id">),
+		};
+	} catch (error) {
+		console.error("Erro ao buscar medicamento:", error);
+		return null;
+	}
+}
+
+export async function atualizarMedicamento(
+	id: string,
+	data: Partial<Medicamento>,
+) {
+	try {
+		const ref = doc(db, "medicamentos", id);
+
+		await updateDoc(ref, {
+			...data,
+		});
+	} catch (error) {
+		console.error("Erro ao atualizar medicamento:", error);
 	}
 }
