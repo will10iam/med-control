@@ -1,12 +1,36 @@
 "use client";
 
-import { useState } from "react";
+/* import { useState } from "react"; */
 import { addMedicamento } from "@/services/medicamentoService";
 
 import { useRouter } from "next/navigation";
 
+import MedicamentoForm from "@/components/MedicamentoForm";
+
 export default function NovoMedicamento() {
-	const [nome, setNome] = useState("");
+	const router = useRouter();
+
+	async function handleCreate(data: any) {
+		await addMedicamento({
+			...data,
+			estoqueAtual: data.quantidadePorCaixa,
+			dataInicio: new Date().toISOString(),
+			createdAt: new Date().toISOString(),
+		});
+		alert("Criado!");
+		router.push("/");
+	}
+
+	return (
+		<div className="p-4">
+			<h1 className="text-xl font-bold mb-4">Novo Medicamento</h1>
+
+			<MedicamentoForm onSubmit={handleCreate} />
+		</div>
+	);
+}
+
+/* const [nome, setNome] = useState("");
 	const [tipo, setTipo] = useState<"continuo" | "eventual">("continuo");
 	const [quantidade, setQuantidade] = useState(30);
 	const [porDia, setPorDia] = useState(1);
@@ -43,7 +67,7 @@ export default function NovoMedicamento() {
 		alert("Medicamento cadastrado!");
 		router.push("/");
 	}
-
+	
 	return (
 		<div className="min-h-screen bg-gray-100 p-4">
 			<h1 className="text-3xl font-bold mb-8 mt-4 text-center text-black">
@@ -53,13 +77,13 @@ export default function NovoMedicamento() {
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<input
 					placeholder="Nome do medicamento"
-					className="w-full p-3 rounded-lg border border-gray-800"
+					className="w-full p-3 rounded-lg border border-gray-800 text-gray-800"
 					value={nome}
 					onChange={(e) => setNome(e.target.value)}
 				/>
 
 				<select
-					className="w-full p-3 rounded-lg border border-gray-800"
+					className="w-full p-3 rounded-lg border border-gray-800 text-gray-800"
 					value={tipo}
 					onChange={(e) => setTipo(e.target.value as "continuo" | "eventual")}
 				>
@@ -70,7 +94,7 @@ export default function NovoMedicamento() {
 				<input
 					type="number"
 					placeholder="Comprimidos por caixa"
-					className="w-full p-3 rounded-lg border border-gray-800"
+					className="w-full p-3 rounded-lg border border-gray-800 text-gray-800"
 					value={quantidade}
 					onChange={(e) => setQuantidade(Number(e.target.value))}
 				/>
@@ -79,7 +103,7 @@ export default function NovoMedicamento() {
 					<input
 						type="number"
 						placeholder="Comprimidos por dia"
-						className="w-full p-3 rounded-lg border border-gray-800"
+						className="w-full p-3 rounded-lg border border-gray-800 text-gray-800"
 						value={porDia}
 						onChange={(e) => setPorDia(Number(e.target.value))}
 					/>
@@ -92,7 +116,7 @@ export default function NovoMedicamento() {
 							placeholder="Horários (ex: 08:00, 20:00)"
 							value={horariosInput}
 							onChange={(e) => setHorariosInput(e.target.value)}
-							className="w-full border p-3 rounded-lg border-gray-800"
+							className="w-full border p-3 rounded-lg border-gray-800 text-gray-800"
 						/>
 						<p className="text-xs text-gray-500">
 							Separe os horários por vírgula (ex: 08:00, 20:00)
@@ -103,7 +127,7 @@ export default function NovoMedicamento() {
 				<input
 					type="number"
 					placeholder="Alerta mínimo"
-					className="w-full p-3 rounded-lg border border-gray-800"
+					className="w-full p-3 rounded-lg border border-gray-800 text-gray-800"
 					value={alerta}
 					onChange={(e) => setAlerta(Number(e.target.value))}
 				/>
@@ -113,5 +137,4 @@ export default function NovoMedicamento() {
 				</button>
 			</form>
 		</div>
-	);
-}
+	); */
