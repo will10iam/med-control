@@ -7,6 +7,10 @@ import { useRouter } from "next/navigation";
 
 import MedicamentoForm from "@/components/MedicamentoForm";
 
+import Link from "next/link";
+
+import { MdKeyboardArrowLeft } from "react-icons/md";
+
 export default function NovoMedicamento() {
 	const router = useRouter();
 
@@ -22,8 +26,13 @@ export default function NovoMedicamento() {
 	}
 
 	return (
-		<div className="p-4">
-			<h1 className="text-xl font-bold mb-4">Novo Medicamento</h1>
+		<div className="min-h-screen bg-gray-100 p-4 text-black">
+			<div className="flex items-center mb-6 mt-4 gap-2">
+				<Link href="/">
+					<MdKeyboardArrowLeft size={40} color="#3b3a3a" />
+				</Link>
+				<h1 className="text-2xl font-bold">Adicionar Medicamento</h1>
+			</div>
 
 			<MedicamentoForm onSubmit={handleCreate} />
 		</div>

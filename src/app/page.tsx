@@ -55,7 +55,7 @@ export default function Home() {
 	return (
 		<div className="min-h-screen bg-gray-100 flex justify-center">
 			<div className="w-full max-w-md bg-gray-100 p-4">
-				<div className="flex space-x-32">
+				<div className="flex space-x-16">
 					<h1 className="ml-3 text-3xl font-bold mb-4 text-start text-black">
 						Medicamentos
 					</h1>

@@ -10,6 +10,8 @@ import {
 	deletarMedicamento,
 } from "@/services/medicamentoService";
 
+import { getStatus } from "@/utils/medicamentoUtils";
+
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 
@@ -55,6 +57,14 @@ export default function MedicamentoDetalhe() {
 
 	if (!med) return <p>Carregando...</p>;
 
+	const status = getStatus(med.estoqueAtual, med.alertaMinimo);
+
+	function getStatusColor(status: string) {
+		if (status === "OK") return "bg-green-600 text-white-700";
+		if (status === "Acabando") return "bg-yellow-400 text-yellow-700";
+		if (status === "Acabou") return "bg-red-600 text-red-700";
+	}
+
 	async function handleDelete(id: string) {
 		const confirm = window.confirm("Deseja excluir este medicamento?");
 		if (!confirm) return;
@@ -74,12 +84,20 @@ export default function MedicamentoDetalhe() {
 				<h1 className="text-3xl font-bold">{med.nome}</h1>
 			</div>
 
-			<p className="text-black font-bold text-3xl ml-12">
-				{med.estoqueAtual}{" "}
-				<span className="font-medium text-lg">comprimidos</span>
-			</p>
+			<div className="flex items-center justify-between -ml-9 mr-3">
+				<p className="text-black font-bold text-5xl ml-12 flex items-baseline gap-2">
+					{med.estoqueAtual}{" "}
+					<span className="font-medium text-2xl">comprimidos</span>
+				</p>
 
-			<div className="bg-white p-4 rounded-xl shadow space-y-2 flex items-center justify-between">
+				<p
+					className={`px-4 py-2 rounded-full text-1xl text-white font-bold ${getStatusColor(status)}`}
+				>
+					{status}
+				</p>
+			</div>
+
+			<div className="bg-white p-4 rounded-xl shadow space-y-2 flex items-center justify-between mt-7">
 				<div>
 					{/* <p>Tipo: {med.tipo}</p> */}
 
@@ -125,7 +143,8 @@ export default function MedicamentoDetalhe() {
 					</span>
 				</p>
 				<p className="font-bold text-gray-700">
-					Início da caixa atual: <span className="font-light italic"></span>
+					Início da caixa atual:{" "}
+					<span className="font-light italic">{med.dataInicio}</span>
 				</p>
 			</div>
 

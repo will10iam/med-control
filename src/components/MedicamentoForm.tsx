@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Medicamento } from "@/types/Medicamento";
+import { IOSPicker } from "@/components/IOSPicker";
+import { IOSDatePicker } from "@/components/IOSDatePicker";
+import { useRouter } from "next/navigation";
 
 type Props = {
 	initialData?: Medicamento;
@@ -21,6 +24,9 @@ export default function MedicamentoForm({ initialData, onSubmit }: Props) {
 	const [horarios, setHorarios] = useState(
 		initialData?.horarios?.join(", ") || "",
 	);
+	const [dataInicio, setDataInicio] = useState("");
+
+	const router = useRouter();
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -41,61 +47,94 @@ export default function MedicamentoForm({ initialData, onSubmit }: Props) {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-4">
+		<form onSubmit={handleSubmit} className="space-y-4 bg-white p-4 rounded-lg">
+			<label className="text-xl text-gray-900 ml-4">Nome do Medicamento</label>
 			<input
-				placeholder="Nome do medicamento"
+				placeholder="Ex: Cymbi 125g"
 				value={nome}
 				onChange={(e) => setNome(e.target.value)}
-				className="w-full p-3 border rounded-lg"
+				className="w-full p-3 border border-gray-300 rounded-lg"
 			/>
 
-			<select
-				value={tipo}
-				onChange={(e) => setTipo(e.target.value as never)}
-				className="w-full p-3 border rounded-lg"
-			>
-				<option value="contínuo">Contínuo</option>
-				<option value="eventual">Eventual</option>
-			</select>
+			<div className="flex bg-gray-200 rounded-lg p-1">
+				<button
+					type="button"
+					onClick={() => setTipo("continuo")}
+					className={`flex-1 p-2 rounded-lg text-sm font-medium transition ${
+						tipo === "continuo" ? "bg-blue-500 text-white" : "text-gray-700"
+					}`}
+				>
+					Contínuo
+				</button>
 
-			<input
-				type="number"
-				placeholder="Comprimidos por caixa"
+				<button
+					type="button"
+					onClick={() => setTipo("eventual")}
+					className={`flex-1 p-2 rounded-lg text-sm font-medium transition ${
+						tipo === "eventual" ? "bg-white text-black shadow" : "text-gray-700"
+					}`}
+				>
+					Eventual
+				</button>
+			</div>
+
+			<IOSPicker
+				label="Comprimidos por caixa"
 				value={quantidade}
-				onChange={(e) => setQuantidade(Number(e.target.value))}
-				className="w-full p-3 border rounded-lg"
+				onChange={setQuantidade}
+				max={100}
 			/>
 
 			{tipo === "continuo" && (
-				<input
-					type="number"
-					placeholder="Comprimidos por dia"
+				<IOSPicker
+					label="Comprimidos por dia"
 					value={porDia}
-					onChange={(e) => setPorDia(Number(e.target.value))}
-					className="w-full p-3 border rounded-lg"
+					onChange={setPorDia}
+					max={3}
 				/>
 			)}
 
-			{tipo === "continuo" && (
-				<input
-					type="text"
-					placeholder="Horários (08:00, 20:00)"
-					value={horarios}
-					onChange={(e) => setHorarios(e.target.value)}
-					className="w-full p-3 border rounded-lg"
-				/>
-			)}
-
-			<input
-				type="number"
-				placeholder="Alerta mínimo"
+			<IOSPicker
+				label="Alerta Mínimo"
 				value={alerta}
-				onChange={(e) => setAlerta(Number(e.target.value))}
-				className="w-full p-3 border rounded-lg"
+				onChange={setAlerta}
+				max={10}
 			/>
 
-			<button className="w-full bg-green-600 text-white p-3 rounded-lg font-bold">
+			{tipo === "continuo" && (
+				<>
+					<label className="text-xl text-gray-900 ml-4">
+						Qual horário tomar?
+					</label>
+					<input
+						type="text"
+						placeholder="Ex: 08:00"
+						value={horarios}
+						onChange={(e) => setHorarios(e.target.value)}
+						className="w-full p-3 rounded-lg text-1xl text-gray-900 border border-gray-300 bg-gray-100"
+					/>
+				</>
+			)}
+
+			<IOSDatePicker
+				label="Início tratamento"
+				value={dataInicio}
+				onChange={setDataInicio}
+			/>
+
+			<button
+				type="submit"
+				className="w-full bg-blue-500 text-white text-xl p-3 rounded-lg font-bold mt-4"
+			>
 				Salvar
+			</button>
+
+			<button
+				type="button"
+				onClick={() => router.back()}
+				className="w-full text-white bg-red-500 text-xl p-3 rounded-lg font-bold border border-red-500 -mt-2"
+			>
+				Cancelar
 			</button>
 		</form>
 	);
