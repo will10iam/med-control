@@ -16,6 +16,8 @@ import { requestNotificationPermission } from "@/lib/firebaseMessaging";
 import { IoNotifications } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa6";
 
+import { toast } from "sonner";
+
 export default function Home() {
 	const [medicamentos, setMedicamentos] = useState<Medicamento[]>([]);
 
@@ -42,7 +44,7 @@ export default function Home() {
 
 		if (token) {
 			await salvarToken(token);
-			alert("Notificações ativadas");
+			toast.success("Notificações Atividas");
 		}
 	}
 

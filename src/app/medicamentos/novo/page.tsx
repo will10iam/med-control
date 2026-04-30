@@ -11,6 +11,8 @@ import Link from "next/link";
 
 import { MdKeyboardArrowLeft } from "react-icons/md";
 
+import { toast } from "sonner";
+
 export default function NovoMedicamento() {
 	const router = useRouter();
 
@@ -21,7 +23,7 @@ export default function NovoMedicamento() {
 			dataInicio: new Date().toISOString(),
 			createdAt: new Date().toISOString(),
 		});
-		alert("Criado!");
+		toast.success("Medicamento regsitrado!");
 		router.push("/");
 	}
 

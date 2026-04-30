@@ -22,6 +22,8 @@ import { useRouter } from "next/navigation";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import { MdKeyboardArrowLeft } from "react-icons/md";
 
+import { toast } from "sonner";
+
 export default function MedicamentoDetalhe() {
 	const { id } = useParams();
 	const [med, setMed] = useState<Medicamento | null>(null);
@@ -44,16 +46,6 @@ export default function MedicamentoDetalhe() {
 
 		return () => unsubscribe();
 	}, [id]);
-	/* const snapshot = await getDoc(ref);
-
-        if (snapshot.exists()) {
-            setMed({
-                id: snapshot.id,
-                ...(snapshot.data() as Medicamento),
-            });
-        }
-    }
-    fetchMedicamento(); */
 
 	if (!med) return <p>Carregando...</p>;
 
@@ -65,13 +57,45 @@ export default function MedicamentoDetalhe() {
 		if (status === "Acabou") return "bg-red-600 text-red-700";
 	}
 
+	function formatarData(dataISO: string) {
+		const date = new Date(dataISO);
+
+		const formatado = new Intl.DateTimeFormat("pt-BR", {
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		}).format(date);
+
+		return formatado.replace(/^\w/, (c) => c.toUpperCase());
+	}
+
 	async function handleDelete(id: string) {
-		const confirm = window.confirm("Deseja excluir este medicamento?");
+		/* const confirm = window.confirm("Deseja excluir este medicamento?");
 		if (!confirm) return;
 
 		await deletarMedicamento(id);
+		toast.success("Medicamento Deletado!");
+		router.push("/"); */
 
-		router.push("/");
+		toast("Excluir medicamento?", {
+			description: "Essa ação não pode ser desfeita.",
+			action: {
+				label: "Excluir",
+				onClick: async () => {
+					await toast.promise(deletarMedicamento(id), {
+						loading: "Excluindo...",
+						success: "Medicamento deletado!",
+						error: "Erro ao excluir",
+					});
+					className: "bg-red-500 text-white";
+
+					router.push("/");
+				},
+			},
+			cancel: {
+				label: "Cancelar",
+			},
+		});
 	}
 
 	return (
@@ -143,8 +167,16 @@ export default function MedicamentoDetalhe() {
 					</span>
 				</p>
 				<p className="font-bold text-gray-700">
+					Em que horário tomar?:{" "}
+					<span className="font-light italic">
+						Todos os dias às {med.horarios}
+					</span>
+				</p>
+				<p className="font-bold text-gray-700">
 					Início da caixa atual:{" "}
-					<span className="font-light italic">{med.dataInicio}</span>
+					<span className="font-light italic">
+						{formatarData(med.dataInicio)}
+					</span>
 				</p>
 			</div>
 
