@@ -87,6 +87,7 @@ export default function MedicamentoDetalhe() {
 						success: "Medicamento deletado!",
 						error: "Erro ao excluir",
 					});
+					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 					className: "bg-red-500 text-white";
 
 					router.push("/");
@@ -94,6 +95,7 @@ export default function MedicamentoDetalhe() {
 			},
 			cancel: {
 				label: "Cancelar",
+				onClick: () => {},
 			},
 		});
 	}
@@ -189,7 +191,7 @@ export default function MedicamentoDetalhe() {
 			</div>
 			<div className="mt-2 bg-red-500 p-3 rounded-xl shadow space-y-2 flex items-center justify-between">
 				<button
-					onClick={() => handleDelete(med.id)}
+					onClick={() => handleDelete(med.id!)}
 					className="text-white text-2xl font-bold"
 				>
 					Excluir medicamento

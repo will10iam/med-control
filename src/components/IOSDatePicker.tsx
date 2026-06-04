@@ -24,13 +24,28 @@ export function IOSDatePicker({ label, value, onChange }: Props) {
 		}).format(date);
 	}
 
-	function openPicker() {
+	/* function openPicker() {
 		if (inputRef.current) {
 			if ("showPicker" in inputRef.current) {
 				inputRef.current.showPicker();
 			} else {
 				inputRef.current.focus();
 			}
+		}
+	} */
+
+	function openPicker() {
+		const input = inputRef.current;
+
+		if (!input) return;
+
+		if (
+			typeof (input as HTMLInputElement & { showPicker?: () => void })
+				.showPicker === "function"
+		) {
+			(input as HTMLInputElement & { showPicker?: () => void }).showPicker!();
+		} else {
+			input.focus();
 		}
 	}
 
