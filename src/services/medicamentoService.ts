@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { Medicamento } from "@/types/Medicamento";
 
-export async function addMedicamento(data: Medicamento) {
+/* export async function addMedicamento(data: Medicamento) {
 	try {
 		const docRef = await addDoc(collection(db, "medicamentos"), {
 			...data,
@@ -20,6 +20,29 @@ export async function addMedicamento(data: Medicamento) {
 		return docRef.id;
 	} catch (error) {
 		console.error("Erro ao adicionar medicamento:", error);
+	}
+} */
+
+export async function addMedicamento(data: Medicamento) {
+	try {
+		const docRef = await addDoc(collection(db, "medicamentos"), {
+			...data,
+		});
+
+		fetch("/api/telegram/novo-medicamento", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		}).catch((err) => {
+			console.error("Erro ao enviar mensagem para o Telegram:", err);
+		});
+
+		return docRef.id;
+	} catch (error) {
+		console.error("Erro ao adicionar medicamento:", error);
+		throw error;
 	}
 }
 
