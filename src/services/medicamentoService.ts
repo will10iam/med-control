@@ -11,6 +11,10 @@ import {
 } from "firebase/firestore";
 import { Medicamento } from "@/types/Medicamento";
 
+import { criarPrimeiraDose } from "./doseService";
+
+import { confirmarDoseDoMedicamento } from "./doseService";
+
 /* export async function addMedicamento(data: Medicamento) {
 	try {
 		const docRef = await addDoc(collection(db, "medicamentos"), {
@@ -29,6 +33,12 @@ export async function addMedicamento(data: Medicamento) {
 			...data,
 		});
 
+		const id = docRef.id;
+
+		// Cria a primeira dose
+		await criarPrimeiraDose(id, data);
+
+		// Envia mensagem para o Telegram (não bloqueia o fluxo)
 		fetch("/api/telegram/novo-medicamento", {
 			method: "POST",
 			headers: {
@@ -39,7 +49,7 @@ export async function addMedicamento(data: Medicamento) {
 			console.error("Erro ao enviar mensagem para o Telegram:", err);
 		});
 
-		return docRef.id;
+		return id;
 	} catch (error) {
 		console.error("Erro ao adicionar medicamento:", error);
 		throw error;
@@ -85,8 +95,18 @@ export async function atualizarEstoque(id: string, novoEstoque: number) {
 	});
 }
 
-export async function usarComprimido(id: string, estoqueAtual: number) {
+export async function usarComprimido(
+	id: string,
+	estoqueAtual: number,
+): Promise<boolean> {
+	const confirmou = await confirmarDoseDoMedicamento(id);
+	if (!confirmou) {
+		return false;
+	}
+
 	await atualizarEstoque(id, Math.max(estoqueAtual - 1, 0));
+
+	return true;
 }
 
 export async function adicionarCaixa(

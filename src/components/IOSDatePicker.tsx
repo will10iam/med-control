@@ -12,7 +12,7 @@ type Props = {
 export function IOSDatePicker({ label, value, onChange }: Props) {
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	function formatDate(dateStr: string) {
+	/* function formatDate(dateStr: string) {
 		if (!dateStr) return "Selecionar data";
 
 		const date = new Date(dateStr);
@@ -22,17 +22,21 @@ export function IOSDatePicker({ label, value, onChange }: Props) {
 			month: "long",
 			year: "numeric",
 		}).format(date);
-	}
-
-	/* function openPicker() {
-		if (inputRef.current) {
-			if ("showPicker" in inputRef.current) {
-				inputRef.current.showPicker();
-			} else {
-				inputRef.current.focus();
-			}
-		}
 	} */
+
+	function formatDate(dateStr: string) {
+		if (!dateStr) return "Selecionar data";
+
+		const [ano, mes, dia] = dateStr.split("-").map(Number);
+
+		const date = new Date(ano, mes - 1, dia);
+
+		return new Intl.DateTimeFormat("pt-BR", {
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		}).format(date);
+	}
 
 	function openPicker() {
 		const input = inputRef.current;

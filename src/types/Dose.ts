@@ -16,5 +16,13 @@ export type Dose = {
 
 	confirmadoEm?: string;
 
+	origemConfirmacao?: OrigemConfirmacao;
+
+	lembreteEnviado?: boolean;
+
+	ultimoLembreteEm?: string;
+
 	createdAt: string;
 };
+
+export type OrigemConfirmacao = "app" | "telegram" | "fcm";

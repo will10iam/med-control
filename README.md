@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💊 MedControl
 
-## Getting Started
+App PWA para controlar o estoque e os horários dos meus medicamentos — saber quanto ainda tem na caixa, quando vai acabar e ser lembrado na hora de tomar, com aviso tanto por push quanto no Telegram.
 
-First, run the development server:
+Nasceu de um problema bem prático: perder a conta de quantos comprimidos ainda restam e esquecer horário de remédio de uso contínuo.
+
+## Funcionalidades
+
+- Cadastro de medicamentos de uso **contínuo** (com horários fixos) ou **eventual**
+- Controle de estoque: dar baixa a cada dose tomada e repor ao comprar uma caixa nova
+- Geração automática da próxima dose ao confirmar a atual
+- Alerta visual de status (`OK` / `Acabando` / `Acabou`) baseado num limite mínimo configurável
+- Notificação push (Firebase Cloud Messaging) quando o estoque fica baixo ou chega o horário do remédio
+- Aviso automático no Telegram sempre que um medicamento novo é cadastrado
+- Instalável como PWA (funciona como app no celular)
+
+## Stack
+
+- [Next.js 16](https://nextjs.org/) (App Router) + React 19 + TypeScript
+- Tailwind CSS 4
+- Firebase (Firestore, Cloud Messaging, Cloud Functions)
+- Telegram Bot API
+- next-pwa
+
+## Rodando localmente
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Crie um `.env.local` na raiz com:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+```
 
-## Learn More
+As duas primeiras (Firebase) vêm do console do Firebase, no cadastro do app web. As do Telegram vêm do [@BotFather](https://t.me/BotFather) (token) e do chat/canal que vai receber os avisos.
 
-To learn more about Next.js, take a look at the following resources:
+## Firebase Functions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+As notificações automáticas (verificação de estoque a cada 15 min e verificação de horário a cada 1 min) rodam em Cloud Functions, em `functions/`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cd functions
+npm install
+npm run deploy
+```
 
-## Deploy on Vercel
+## Estrutura
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/            páginas (App Router) e rotas de API
+  components/     formulário e pickers de UI
+  services/       regras de negócio (medicamentos, doses)
+  lib/            inicialização do Firebase
+  server/         integração com o Telegram
+  types/ utils/   tipos e helpers
+functions/        Cloud Functions (jobs agendados)
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Status
+
+Projeto pessoal, em uso ativo no dia a dia. Próximos passos que pretendo atacar: regras de segurança do Firestore versionadas no repo e disparo automático dos lembretes de dose (hoje a rota que lista as doses pendentes existe, mas ainda depende de algo externo chamá-la).

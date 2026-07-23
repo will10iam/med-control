@@ -43,6 +43,7 @@ export default function MedicamentoForm({ initialData, onSubmit }: Props) {
 			comprimidosPorDia: tipo === "continuo" ? porDia : undefined,
 			alertaMinimo: alerta,
 			horarios: horariosArray,
+			dataInicio,
 		});
 	}
 

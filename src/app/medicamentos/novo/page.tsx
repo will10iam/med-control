@@ -20,7 +20,7 @@ export default function NovoMedicamento() {
 		await addMedicamento({
 			...data,
 			estoqueAtual: data.quantidadePorCaixa,
-			dataInicio: new Date().toISOString(),
+			dataInicio: data.dataInicio,
 			createdAt: new Date().toISOString(),
 		});
 		toast.success("Medicamento regsitrado!");

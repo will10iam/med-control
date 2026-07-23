@@ -100,6 +100,23 @@ export default function MedicamentoDetalhe() {
 		});
 	}
 
+	async function handleUsarComprimido() {
+		if (!med || !med.id) return;
+
+		try {
+			const confirmou = await usarComprimido(med.id, med.estoqueAtual);
+
+			if (confirmou) {
+				toast.success("Dose registrada com sucesso!");
+			} else {
+				toast.error("Nenhuma dose pendente para este medicamento.");
+			}
+		} catch (error) {
+			console.error(error);
+			toast.error("Erro ao registrar a dose.");
+		}
+	}
+
 	return (
 		<div className="min-h-screen bg-gray-100 p-4 text-black">
 			<div className="flex items-center mb-6 mt-4 gap-2">
@@ -129,7 +146,7 @@ export default function MedicamentoDetalhe() {
 
 					<div className="mt-2 flex flex-col justify-center items-center">
 						<button
-							onClick={() => usarComprimido(med.id!, med.estoqueAtual)}
+							onClick={handleUsarComprimido}
 							className="w-81 h-12 bg-blue-800 text-white rounded-md flex items-center justify-center gap-8 cursor-pointer mb-2"
 						>
 							<FaMinus size={30} color="#FFF" />
