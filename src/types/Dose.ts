@@ -4,7 +4,6 @@ export type Dose = {
 	id?: string;
 
 	medicamentoId: string;
-
 	medicamentoNome: string;
 
 	data: string;
@@ -14,13 +13,15 @@ export type Dose = {
 
 	status: StatusDose;
 
-	confirmadoEm?: string;
-
-	origemConfirmacao?: OrigemConfirmacao;
-
 	lembreteEnviado?: boolean;
 
-	ultimoLembreteEm?: string;
+	notificacoes: {
+		lembrete10min: boolean;
+		atraso15min: boolean;
+	};
+
+	confirmadoEm?: string;
+	origemConfirmacao?: OrigemConfirmacao;
 
 	createdAt: string;
 };

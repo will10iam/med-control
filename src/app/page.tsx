@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-	getMedicamentos,
+	/* getMedicamentos, */
 	subscribeMedicamentos,
 	salvarToken,
 } from "@/services/medicamentoService";

@@ -86,7 +86,10 @@ export async function criarPrimeiraDose(
 
 		status: "pendente",
 
-		lembreteEnviado: false,
+		notificacoes: {
+			lembrete10min: false,
+			atraso15min: false,
+		},
 
 		createdAt: new Date().toISOString(),
 	};
@@ -145,29 +148,35 @@ export async function criarProximaDose(dose: Dose) {
 
 		status: "pendente",
 
-		lembreteEnviado: false,
+		notificacoes: {
+			lembrete10min: false,
+			atraso15min: false,
+		},
 
 		createdAt: new Date().toISOString(),
 	});
 }
 
 export async function buscarDosesParaLembrete() {
-	const q = query(
-		collection(db, "doses"),
-		where("status", "==", "pendente"),
-		where("lembreteEnviado", "==", false),
-	);
+	const q = query(collection(db, "doses"), where("status", "==", "pendente"));
 
 	const snapshot = await getDocs(q);
 
 	const agora = new Date();
 
 	const doses = snapshot.docs
-		.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		}))
-		.filter((dose: any) => {
+		.map(
+			(doc) =>
+				({
+					id: doc.id,
+					...doc.data(),
+				}) as Dose,
+		)
+		.filter((dose) => {
+			if (dose.notificacoes?.lembrete10min) {
+				return false;
+			}
+
 			const previsto = new Date(dose.previstoPara);
 
 			const diferenca = (previsto.getTime() - agora.getTime()) / 60000;
@@ -176,4 +185,52 @@ export async function buscarDosesParaLembrete() {
 		});
 
 	return doses;
+}
+
+export async function marcarLembreteEnviado(id: string) {
+	await updateDoc(doc(db, "doses", id), {
+		lembreteEnviado: true,
+	});
+}
+
+export async function marcarLembrete10MinEnviado(id: string) {
+	await updateDoc(doc(db, "doses", id), {
+		"notificacoes.lembrete10min": true,
+	});
+}
+
+export async function buscarDosesAtrasadas() {
+	const q = query(collection(db, "doses"), where("status", "==", "pendente"));
+
+	const snapshot = await getDocs(q);
+
+	const agora = new Date();
+
+	const doses = snapshot.docs
+		.map(
+			(doc) =>
+				({
+					id: doc.id,
+					...doc.data(),
+				}) as Dose,
+		)
+		.filter((dose) => {
+			if (dose.notificacoes?.atraso15min) {
+				return false;
+			}
+
+			const previsto = new Date(dose.previstoPara);
+
+			const diferenca = (agora.getTime() - previsto.getTime()) / 60000;
+
+			return diferenca >= 15;
+		});
+
+	return doses;
+}
+
+export async function marcarLembreteAtrasoEnviado(id: string) {
+	await updateDoc(doc(db, "doses", id), {
+		"notificacoes.atraso15min": true,
+	});
 }

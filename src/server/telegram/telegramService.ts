@@ -40,3 +40,42 @@ ${medicamento.quantidadePorCaixa} comprimidos
 
 	await sendTelegramMessage(mensagem);
 }
+
+export async function enviarLembreteDose(nome: string, horario: string) {
+	const mensagem = `
+💊 Hora do seu medicamento!
+
+Daqui a 10 minutos você deverá tomar:
+
+💊 ${nome}
+
+🕒 Horário: ${horario}
+
+Após tomar, confirme a dose no aplicativo.
+
+MedControl
+`;
+
+	return sendTelegramMessage(mensagem);
+}
+
+export async function enviarLembreteAtraso(nome: string, horario: string) {
+	const mensagem = `
+⚠️ Você esqueceu seu medicamento!
+
+Você ainda não confirmou a dose de:
+
+💊 ${nome}
+
+Já faz mais de 15 minutos do horário previsto.
+
+🕒 Horário previsto: ${horario}
+
+Caso já tenha tomado o medicamento,
+abra o MedControl e confirme a dose.
+
+MedControl
+`;
+
+	await sendTelegramMessage(mensagem);
+}
