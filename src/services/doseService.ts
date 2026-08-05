@@ -234,3 +234,50 @@ export async function marcarLembreteAtrasoEnviado(id: string) {
 		"notificacoes.atraso15min": true,
 	});
 }
+
+export async function buscarProximaDose() {
+	const q = query(
+		collection(db, "doses"),
+		where("status", "==", "pendente"),
+		orderBy("previstoPara"),
+		limit(1),
+	);
+
+	const snapshot = await getDocs(q);
+
+	if (snapshot.empty) {
+		return null;
+	}
+
+	return {
+		id: snapshot.docs[0].id,
+		...snapshot.docs[0].data(),
+	} as Dose;
+}
+
+export async function buscarResumoHoje() {
+	const hoje = formatarDataLocal(new Date());
+
+	const q = query(collection(db, "doses"), where("data", "==", hoje));
+
+	const snapshot = await getDocs(q);
+
+	const doses = snapshot.docs.map((doc) => ({
+		id: doc.id,
+		...doc.data(),
+	})) as Dose[];
+
+	let tomadas = 0;
+	let pendentes = 0;
+
+	for (const dose of doses) {
+		if (dose.status === "confirmada") tomadas++;
+		else if (dose.status === "pendente") pendentes++;
+	}
+
+	return {
+		previstas: doses.length,
+		tomadas,
+		pendentes,
+	};
+}

@@ -18,8 +18,21 @@ import { FaPlus } from "react-icons/fa6";
 
 import { toast } from "sonner";
 
+import { Dose } from "@/types/Dose";
+import { buscarProximaDose } from "@/services/doseService";
+
+import { calcularTempoRestante } from "@/utils/doseUtils";
+
+import { buscarResumoHoje } from "@/services/doseService";
+
 export default function Home() {
 	const [medicamentos, setMedicamentos] = useState<Medicamento[]>([]);
+	const [proximaDose, setProximaDose] = useState<Dose | null>(null);
+	const [resumoHoje, setResumoHoje] = useState({
+		previstas: 0,
+		tomadas: 0,
+		pendentes: 0,
+	});
 
 	/* useEffect(() => {
 		async function fetchData() {
@@ -32,8 +45,20 @@ export default function Home() {
 	}, []); */
 
 	useEffect(() => {
+		async function carregarDashboard() {
+			const dose = await buscarProximaDose();
+			setProximaDose(dose);
+
+			const resumo = await buscarResumoHoje();
+			setResumoHoje(resumo);
+		}
+
+		carregarDashboard();
+
 		const unsubscribe = subscribeMedicamentos((data: Medicamento[]) => {
 			setMedicamentos(data);
+
+			carregarDashboard();
 		});
 
 		return () => unsubscribe();
@@ -54,6 +79,12 @@ export default function Home() {
 		if (status === "Acabou") return "bg-red-600 text-red-700";
 	}
 
+	const agora = new Date();
+
+	const doseAtrasada =
+		proximaDose &&
+		new Date(proximaDose.previstoPara).getTime() < agora.getTime();
+
 	return (
 		<div className="min-h-screen bg-gray-100 flex justify-center">
 			<div className="w-full max-w-md bg-gray-100 p-4">
@@ -73,6 +104,67 @@ export default function Home() {
 						>
 							<IoNotifications size={25} />
 						</button>
+					</div>
+				</div>
+
+				{proximaDose && (
+					<div
+						className={`rounded-2xl shadow p-4 mb-4 border-l-4 ${
+							doseAtrasada
+								? "bg-red-50 border-red-500"
+								: "bg-white border-blue-500"
+						}`}
+					>
+						<p
+							className={`text-sm font-semibold ${
+								doseAtrasada ? "text-red-600" : "text-gray-500"
+							}`}
+						>
+							{doseAtrasada ? "⚠️ Dose atrasada" : "Próxima dose"}
+						</p>
+
+						<p className="text-xl font-bold text-gray-800 mt-2">
+							💊 {proximaDose.medicamentoNome}
+						</p>
+
+						<p className="text-gray-600 mt-1">🕒 {proximaDose.horario}</p>
+
+						<p
+							className={`font-semibold mt-2 ${
+								doseAtrasada ? "text-red-600" : "text-blue-600"
+							}`}
+						>
+							{calcularTempoRestante(proximaDose.previstoPara)}
+						</p>
+					</div>
+				)}
+
+				<div className="bg-white rounded-2xl shadow p-4 mb-4">
+					<h2 className="text-lg font-bold text-gray-800 mb-3">
+						📊 Resumo de Hoje
+					</h2>
+
+					<div className="flex justify-between text-center">
+						<div>
+							<p className="text-2xl font-bold text-blue-600">
+								{resumoHoje.previstas}
+							</p>
+							<p className="text-sm text-gray-500">Previstas</p>
+						</div>
+
+						<div>
+							<p className="text-2xl font-bold text-green-600">
+								{resumoHoje.tomadas}
+							</p>
+							<p className="text-sm text-gray-500">Tomadas</p>
+						</div>
+
+						<div>
+							<p className="text-2xl font-bold text-orange-500">
+								{resumoHoje.pendentes}
+							</p>
+							<p className="text-sm text-gray-500">Pendentes</p>
+						</div>
 					</div>
 				</div>
 
