@@ -10,8 +10,9 @@ import {
 	onSnapshot,
 } from "firebase/firestore";
 import { Medicamento } from "@/types/Medicamento";
+import { ResultadoUsoComprimido } from "@/types/ResultadoUsoComprimido";
 
-import { criarPrimeiraDose } from "./doseService";
+import { criarPrimeiraDose, criarProximaDose } from "./doseService";
 
 import { confirmarDoseDoMedicamento } from "./doseService";
 
@@ -31,6 +32,8 @@ export async function addMedicamento(data: Medicamento) {
 	try {
 		const docRef = await addDoc(collection(db, "medicamentos"), {
 			...data,
+			estoqueBaixoNotificado: false,
+			estoqueEsgotadoNotificado: false,
 		});
 
 		const id = docRef.id;
@@ -98,15 +101,92 @@ export async function atualizarEstoque(id: string, novoEstoque: number) {
 export async function usarComprimido(
 	id: string,
 	estoqueAtual: number,
-): Promise<boolean> {
-	const confirmou = await confirmarDoseDoMedicamento(id);
-	if (!confirmou) {
-		return false;
+	alertaMinimo: number,
+): Promise<ResultadoUsoComprimido> {
+	if (estoqueAtual <= 0) {
+		throw new Error(
+			"Não é possível registrar uma dose de um medicamento sem estoque.",
+		);
 	}
 
-	await atualizarEstoque(id, Math.max(estoqueAtual - 1, 0));
+	const dose = await confirmarDoseDoMedicamento(id);
 
-	return true;
+	if (!dose) {
+		return {
+			confirmou: false,
+			estoqueRestante: estoqueAtual,
+			estoqueBaixo: false,
+			estoqueAcabou: false,
+		};
+	}
+
+	const novoEstoque = estoqueAtual - 1;
+
+	await atualizarEstoque(id, novoEstoque);
+
+	if (novoEstoque > 0) {
+		await criarProximaDose(dose);
+	}
+
+	const medicamento = await getMedicamentoById(id);
+
+	if (
+		medicamento &&
+		novoEstoque > 0 &&
+		novoEstoque <= alertaMinimo &&
+		!medicamento.estoqueBaixoNotificado
+	) {
+		fetch("/api/telegram/estoque-baixo", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				nome: medicamento.nome,
+				estoqueRestante: novoEstoque,
+				alertaMinimo,
+			}),
+		})
+			.then(async (response) => {
+				if (response.ok) {
+					await marcarEstoqueBaixoNotificado(id);
+				}
+			})
+			.catch((error) => {
+				console.error("Erro ao enviar notificação de estoque baixo:", error);
+			});
+	}
+
+	if (
+		medicamento &&
+		novoEstoque === 0 &&
+		!medicamento.estoqueEsgotadoNotificado
+	) {
+		fetch("/api/telegram/estoque-esgotado", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				nome: medicamento.nome,
+			}),
+		})
+			.then(async (response) => {
+				if (response.ok) {
+					await marcarEstoqueEsgotadoNotificado(id);
+				}
+			})
+			.catch((error) => {
+				console.error("Erro ao enviar notificação de estoque esgotado:", error);
+			});
+	}
+
+	return {
+		confirmou: true,
+		estoqueRestante: novoEstoque,
+		estoqueBaixo: novoEstoque > 0 && novoEstoque <= alertaMinimo,
+		estoqueAcabou: novoEstoque === 0,
+	};
 }
 
 export async function adicionarCaixa(
@@ -114,7 +194,40 @@ export async function adicionarCaixa(
 	estoqueAtual: number,
 	quantidadePorCaixa: number,
 ) {
-	await atualizarEstoque(id, estoqueAtual + quantidadePorCaixa);
+	const novoEstoque = estoqueAtual + quantidadePorCaixa;
+	await atualizarEstoque(id, novoEstoque);
+
+	try {
+		const medicamento = await getMedicamentoById(id);
+
+		if (!medicamento) {
+			console.error("Medicamento não encontrado para notificação.");
+			return;
+		}
+
+		const ref = doc(db, "medicamentos", id);
+
+		await updateDoc(ref, {
+			estoqueBaixoNotificado: false,
+			estoqueEsgotadoNotificado: false,
+		});
+
+		fetch("/api/telegram/nova-caixa", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				nome: medicamento.nome,
+				quantidadeAdicionada: quantidadePorCaixa,
+				estoqueTotal: novoEstoque,
+			}),
+		}).catch((error) => {
+			console.error("Erro ao enviar notificação de nova caixa:", error);
+		});
+	} catch (error) {
+		console.error("Erro ao preparar notificação de nova caixa:", error);
+	}
 }
 
 export async function salvarToken(token: string) {
@@ -164,4 +277,20 @@ export async function atualizarMedicamento(
 	} catch (error) {
 		console.error("Erro ao atualizar medicamento:", error);
 	}
+}
+
+export async function marcarEstoqueBaixoNotificado(id: string) {
+	const ref = doc(db, "medicamentos", id);
+
+	await updateDoc(ref, {
+		estoqueBaixoNotificado: true,
+	});
+}
+
+export async function marcarEstoqueEsgotadoNotificado(id: string) {
+	const ref = doc(db, "medicamentos", id);
+
+	await updateDoc(ref, {
+		estoqueEsgotadoNotificado: true,
+	});
 }

@@ -79,3 +79,80 @@ MedControl
 
 	await sendTelegramMessage(mensagem);
 }
+
+export async function enviarDoseConfirmada(
+	nome: string,
+	horario: string,
+	estoqueRestante: number,
+) {
+	const mensagem = `
+✅ Dose registrada!
+
+💊 Medicamento: ${nome}
+
+🕒 Horário: ${horario}
+
+📦 Estoque restante: ${estoqueRestante} comprimido(s)
+
+MedControl
+`;
+	await sendTelegramMessage(mensagem);
+}
+
+export async function enviarNovaCaixa(
+	nome: string,
+	quantidadeAdicionada: number,
+	estoqueTotal: number,
+) {
+	const mensagem = `
+📦 Nova caixa registrada!
+
+💊 Medicamento: ${nome}
+
+➕ Quantidade adicionada: ${quantidadeAdicionada} comprimido(s)
+
+📦 Estoque atual: ${estoqueTotal} comprimido(s)
+
+MedControl
+`;
+
+	await sendTelegramMessage(mensagem);
+}
+
+export async function enviarEstoqueBaixo(
+	nome: string,
+	estoqueRestante: number,
+	alertaMinimo: number,
+) {
+	const mensagem = `
+⚠️ Estoque baixo!
+
+💊 Medicamento: ${nome}
+
+📦 Restam apenas ${estoqueRestante} comprimido(s).
+
+⚠️ Seu limite de alerta é ${alertaMinimo} comprimido(s).
+
+Considere providenciar uma nova caixa.
+
+MedControl
+`;
+
+	await sendTelegramMessage(mensagem);
+}
+
+export async function enviarEstoqueEsgotado(nome: string) {
+	const mensagem = `
+🚨 Medicamento esgotado!
+
+💊 ${nome}
+
+📦 O estoque chegou a 0 comprimidos.
+
+Nenhuma nova dose será programada até que o medicamento seja reabastecido.
+
+MedControl
+`;
+
+	await sendTelegramMessage(mensagem);
+}

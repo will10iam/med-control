@@ -51,6 +51,11 @@ export default function MedicamentoDetalhe() {
 
 	const status = getStatus(med.estoqueAtual, med.alertaMinimo);
 
+	const medicamentoAcabou = med.estoqueAtual <= 0;
+
+	const medicamentoAcabando =
+		med.estoqueAtual > 0 && med.estoqueAtual <= med.alertaMinimo;
+
 	function getStatusColor(status: string) {
 		if (status === "OK") return "bg-green-600 text-white-700";
 		if (status === "Acabando") return "bg-yellow-400 text-yellow-700";
@@ -104,13 +109,31 @@ export default function MedicamentoDetalhe() {
 		if (!med || !med.id) return;
 
 		try {
-			const confirmou = await usarComprimido(med.id, med.estoqueAtual);
+			const resultado = await usarComprimido(
+				med.id,
+				med.estoqueAtual,
+				med.alertaMinimo,
+			);
 
-			if (confirmou) {
-				toast.success("Dose registrada com sucesso!");
-			} else {
+			if (!resultado.confirmou) {
 				toast.error("Nenhuma dose pendente para este medicamento.");
+				return;
 			}
+
+			if (resultado.estoqueAcabou) {
+				toast.warning(
+					"O medicamento acabou. Adicione uma nova caixa para continuar o tratamento.",
+				);
+				return;
+			}
+
+			if (resultado.estoqueBaixo) {
+				toast.warning(
+					`Dose registrada! Restam apenas ${resultado.estoqueRestante} comprimido(s).`,
+				);
+				return;
+			}
+			toast.success("Dose registrada com sucesso!");
 		} catch (error) {
 			console.error(error);
 			toast.error("Erro ao registrar a dose.");
@@ -147,10 +170,18 @@ export default function MedicamentoDetalhe() {
 					<div className="mt-2 flex flex-col justify-center items-center">
 						<button
 							onClick={handleUsarComprimido}
-							className="w-81 h-12 bg-blue-800 text-white rounded-md flex items-center justify-center gap-8 cursor-pointer mb-2"
+							disabled={medicamentoAcabou}
+							className={`w-81 h-12 rounded-md flex items-center justify-center gap-8 mb-2 text-white ${medicamentoAcabou ? "bg-gray-400 cursor-not-allowed" : medicamentoAcabando ? "bg-yellow-500 hover:bg-yellow-600" : "bg-blue-800 hover:bg-blue-900"}`}
 						>
 							<FaMinus size={30} color="#FFF" />
-							<span className="text-2xl">Usei 1 comprimido</span>
+
+							<span className="text-2xl">
+								{medicamentoAcabou
+									? "Medicamento esgotado"
+									: medicamentoAcabando
+										? "Últimas doses"
+										: "Usei 1 comprimido"}
+							</span>
 						</button>
 
 						<button

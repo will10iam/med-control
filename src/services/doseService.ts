@@ -100,35 +100,28 @@ export async function criarPrimeiraDose(
 export async function confirmarDoseDoMedicamento(
 	medicamentoId: string,
 	origem: OrigemConfirmacao = "app",
-): Promise<boolean> {
-	try {
-		const q = query(
-			collection(db, "doses"),
-			where("medicamentoId", "==", medicamentoId),
-			where("status", "==", "pendente"),
-			orderBy("previstoPara"),
-			limit(1),
-		);
+): Promise<Dose | null> {
+	const q = query(
+		collection(db, "doses"),
+		where("medicamentoId", "==", medicamentoId),
+		where("status", "==", "pendente"),
+		orderBy("previstoPara"),
+		limit(1),
+	);
 
-		const snapshot = await getDocs(q);
+	const snapshot = await getDocs(q);
 
-		if (snapshot.empty) {
-			return false;
-		}
-
-		const doseDoc = snapshot.docs[0];
-
-		const dose = doseDoc.data() as Dose;
-
-		await confirmarDose(doseDoc.id, origem);
-
-		await criarProximaDose(dose);
-
-		return true;
-	} catch (error) {
-		console.error("Erro ao confirmar dose:", error);
-		return false;
+	if (snapshot.empty) {
+		return null;
 	}
+
+	const doseDoc = snapshot.docs[0];
+
+	const dose = doseDoc.data() as Dose;
+
+	await confirmarDose(doseDoc.id, origem);
+
+	return dose;
 }
 
 export async function criarProximaDose(dose: Dose) {

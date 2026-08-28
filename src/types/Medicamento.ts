@@ -9,4 +9,7 @@ export type Medicamento = {
 	dataInicio: string;
 	horarios?: string[];
 	createdAt: string;
+
+	estoqueBaixoNotificado?: boolean;
+	estoqueEsgotadoNotificado?: boolean;
 };
