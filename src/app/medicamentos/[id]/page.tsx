@@ -120,6 +120,18 @@ export default function MedicamentoDetalhe() {
 				return;
 			}
 
+			await fetch("/api/telegram/dose-confirmada", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					nome: med.nome,
+					horario: med.horarios,
+					estoqueRestante: resultado.estoqueRestante,
+				}),
+			});
+
 			if (resultado.estoqueAcabou) {
 				toast.warning(
 					"O medicamento acabou. Adicione uma nova caixa para continuar o tratamento.",

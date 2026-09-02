@@ -23,6 +23,8 @@ import { buscarProximaDose } from "@/services/doseService";
 
 import { calcularTempoRestante } from "@/utils/doseUtils";
 
+import { calcularProgresso } from "@/utils/progressoUtils";
+
 import { buscarResumoHoje } from "@/services/doseService";
 
 export default function Home() {
@@ -33,16 +35,6 @@ export default function Home() {
 		tomadas: 0,
 		pendentes: 0,
 	});
-
-	/* useEffect(() => {
-		async function fetchData() {
-			const data = await getMedicamentos();
-			console.log("DADOS:", data);
-			setMedicamentos(data as Medicamento[]);
-			console.log(medicamentos);
-		}
-		fetchData();
-	}, []); */
 
 	useEffect(() => {
 		async function carregarDashboard() {
@@ -84,6 +76,8 @@ export default function Home() {
 	const doseAtrasada =
 		proximaDose &&
 		new Date(proximaDose.previstoPara).getTime() < agora.getTime();
+
+	const progresso = calcularProgresso(resumoHoje.tomadas, resumoHoje.previstas);
 
 	return (
 		<div className="min-h-screen bg-gray-100 flex justify-center">
@@ -165,6 +159,24 @@ export default function Home() {
 							</p>
 							<p className="text-sm text-gray-500">Pendentes</p>
 						</div>
+					</div>
+
+					<div className="mt-4">
+						<div className="flex justify-between text-sm mb-1">
+							<span className="text-gray-600">Progresso</span>
+							<span className="font-semibold text-gray-700">{progresso}%</span>
+						</div>
+
+						<div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+							<div
+								className="h-full bg-blue-600 rounded-full transition-all duration-300"
+								style={{ width: `${progresso}%` }}
+							/>
+						</div>
+
+						<p className="text-xs text-gray-500 mt-1 text-center">
+							{resumoHoje.tomadas} de {resumoHoje.previstas} doses tomadas
+						</p>
 					</div>
 				</div>
 

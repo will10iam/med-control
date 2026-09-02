@@ -8,6 +8,9 @@ import {
 	getDoc,
 	deleteDoc,
 	onSnapshot,
+	query,
+	where,
+	writeBatch,
 } from "firebase/firestore";
 import { Medicamento } from "@/types/Medicamento";
 import { ResultadoUsoComprimido } from "@/types/ResultadoUsoComprimido";
@@ -242,7 +245,22 @@ export async function salvarToken(token: string) {
 }
 
 export async function deletarMedicamento(id: string) {
-	await deleteDoc(doc(db, "medicamentos", id));
+	const dosesQuery = query(
+		collection(db, "doses"),
+		where("medicamentoId", "==", id),
+	);
+
+	const snapshot = await getDocs(dosesQuery);
+
+	const batch = writeBatch(db);
+
+	snapshot.docs.forEach((doseDoc) => {
+		batch.delete(doseDoc.ref);
+	});
+
+	batch.delete(doc(db, "medicamentos", id));
+
+	await batch.commit();
 }
 
 export async function getMedicamentoById(
